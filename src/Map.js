@@ -23,6 +23,24 @@ const geojsonStyle = {
     fillOpacity: 0.8        // Doldurma saydamlığı
 };
 
+const countryStyle = (feature) => {
+    // Türkiye'nin ID veya ismine göre kontrol yaparak sadece onu sarı yapalım
+    if (feature.properties.name === "Turkey") {
+        return {
+            color: '#737272',         // Çizgi rengi
+            weight: 2,              // Çizgi kalınlığı
+            fillColor: '#590101', // Doldurma rengi
+            fillOpacity: 0.8        // Doldurma saydamlığı
+        };
+    }
+    return {
+        color: '#737272',         // Çizgi rengi
+        weight: 2,              // Çizgi kalınlığı
+        fillColor: '#1a1818', // Doldurma rengi
+        fillOpacity: 0.8        // Doldurma saydamlığı
+    };
+};
+
 const Map = () => {
     const [aircrafts, setAircrafts] = useState(initialAircrafts); // Uçak verisini state olarak tutuyoruz
 
@@ -47,7 +65,7 @@ const Map = () => {
                 zoom={8}
                 maxZoom={12}
                 style={{height: "1200px", width: "100%", backgroundColor: "#e0e0e0"}}>
-                <GeoJSON data={geojsonData} style={geojsonStyle}/>
+                <GeoJSON data={geojsonData} style={countryStyle}/>
                 <MousePosition/>
                 {aircrafts.map((aircraft => (
                     <AirplaneMarker
