@@ -1,10 +1,51 @@
 import React, {useEffect, useState} from 'react';
-import {GeoJSON, MapContainer} from "react-leaflet";
+import {GeoJSON, MapContainer, useMap} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import geojsonData from './countries.geo.json';
 import MousePosition from "./MousePosition";
 import AirplaneMarker from "./AirplaneMarker";
 
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-arrowheads';
+
+const fillColor = "#363617";
+
+const invertColor = (hex) => {
+
+    // Hex rengini RGB'ye dönüştür
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+
+    // Luminance hesapla
+    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+    // Luminance değeri 128'in altındaysa, renk koyu, üstündeyse açık
+    return luminance > 128 ? "#000000" : "#000000"; // Açıksa siyah, koyuysa beyaz
+};
+
+const ArrowLine = ({from, to}) => {
+    const map = useMap();
+
+    useEffect(() => {
+        const line = L.polyline([from, to], {
+            color: invertColor(fillColor),
+            weight: 0.7,
+        }).arrowheads({
+            frequency: "2",
+            size: "10px",
+            yawn: 75,
+        }).addTo(map);
+
+        return () => {
+            map.removeLayer(line);
+        };
+    }, [map, from, to]);
+
+
+    return null;
+};
 
 const initialAircrafts = [
     {id: 1, lat: 41.00, lng: 29.00},
@@ -29,7 +70,7 @@ const countryStyle = (feature) => {
         return {
             color: '#737272',         // Çizgi rengi
             weight: 2,              // Çizgi kalınlığı
-            fillColor: '#590101', // Doldurma rengi
+            fillColor: fillColor, // Doldurma rengi
             fillOpacity: 0.8        // Doldurma saydamlığı
         };
     }
@@ -41,6 +82,7 @@ const countryStyle = (feature) => {
     };
 };
 
+
 const Map = () => {
     const [aircrafts, setAircrafts] = useState(initialAircrafts); // Uçak verisini state olarak tutuyoruz
 
@@ -50,6 +92,7 @@ const Map = () => {
                 return prevAircrafts.map((aircraft) => ({
                     ...aircraft,
                     lat: aircraft.lat + 0.01,
+                    lng: aircraft.id === 2 ? aircraft.lng += 0.01 : aircraft.lng
                 }));
             });
         }, 3000);
@@ -62,7 +105,7 @@ const Map = () => {
         <div style={{position: 'relative', height: '100vh'}}>
             <MapContainer
                 center={[41.05, 29.05]}
-                zoom={8}
+                zoom={7}
                 maxZoom={12}
                 style={{height: "1200px", width: "100%", backgroundColor: "#e0e0e0"}}>
                 <GeoJSON data={geojsonData} style={countryStyle}/>
@@ -74,6 +117,14 @@ const Map = () => {
                         position={[aircraft.lat, aircraft.lng]}
                     />
                 )))}
+                <ArrowLine from={[40.1, 29.45]} to={[aircrafts[1].lat, aircrafts[1].lng]}/>
+                <AirplaneMarker
+                    key={6}
+                    id={6}
+                    position={[40.1, 29.45]}
+                />
+
+
             </MapContainer>
         </div>
     );
